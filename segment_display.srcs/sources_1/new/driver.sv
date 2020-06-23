@@ -32,10 +32,12 @@ module driver(
     reg [7:0] segout5;
     reg [7:0] segout6;
     reg [7:0] segout7;
+    reg [7:0] segments = 8'hff;
+    reg [7:0] digits   = 8'hff;
     
-    integer counter = 0;        // initiales counter used to slow down clk, 100 Mhz is too fast to run display
+    integer counter = 0;                // initiales counter used to slow down clk, 100 Mhz is too fast to run display
     
-    always @* begin             // assign each 4 bits to one segment and convert to 7-segment code
+    always @(i_data) begin              // assign each 4 bits to one segment and convert to 7-segment code
         segout0 = MEM[i_data[3:0]];  
         segout1 = MEM[i_data[7:4]];  
         segout2 = MEM[i_data[11:8]]; 
@@ -46,41 +48,44 @@ module driver(
         segout7 = MEM[i_data[31:28]];
     end
     
-    always @(posedge i_clk) begin
+    assign o_segments = segments;
+    assign o_digits   = digits;
+    
+    always @(posedge i_clk) begin       // alternate between digits on the board
         if(i_clk) begin
             if (counter < TOTAL_CYCLES) begin
                 counter <= counter + 1;
                 if (counter < CYCLES_PER_DIGIT - 1) begin
-                    o_segments <= segout0;
-                    o_digits <= 8'b11111110;
+                    segments <= segout0;
+                    digits <= 8'b11111110;
                     end
                 else if (counter < CYCLES_PER_DIGIT*2 - 1) begin
-                    o_segments <= segout1;
-                    o_digits <= 8'b11111101;
+                    segments <= segout1;
+                    digits <= 8'b11111101;
                     end
                 else if (counter < CYCLES_PER_DIGIT*3 - 1) begin
-                    o_segments <= segout2;
-                    o_digits <= 8'b11111011;
+                    segments <= segout2;
+                    digits <= 8'b11111011;
                     end
                 else if (counter < CYCLES_PER_DIGIT*4 - 1) begin
-                    o_segments <= segout3;
-                    o_digits <= 8'b11110111;
+                    segments <= segout3;
+                    digits <= 8'b11110111;
                     end
                 else if (counter < CYCLES_PER_DIGIT*5 - 1) begin
-                    o_segments <= segout4;
-                    o_digits <= 8'b11101111;
+                    segments <= segout4;
+                    digits <= 8'b11101111;
                     end
                 else if (counter < CYCLES_PER_DIGIT*6 - 1) begin
-                    o_segments <= segout5;
-                    o_digits <= 8'b11011111;
+                    segments <= segout5;
+                    digits <= 8'b11011111;
                     end
                 else if (counter < CYCLES_PER_DIGIT*7 - 1) begin
-                    o_segments <= segout6;
-                    o_digits <= 8'b10111111;
+                    segments <= segout6;
+                    digits <= 8'b10111111;
                     end
                 else if (counter < TOTAL_CYCLES - 1) begin
-                    o_segments <= segout7;
-                    o_digits <= 8'b01111111;
+                    segments <= segout7;
+                    digits <= 8'b01111111;
                     end
             end
             else
